@@ -2,6 +2,7 @@
 
 require "rubygems"
 require "bundler/setup"
+require "optparse"
 require "nokogiri"
 require "open-uri"
 require "date"
@@ -13,7 +14,16 @@ end
 today = Date.today
 year = today.year
 month = today.month
+
+OptionParser.new do |options|
+  options.on("-m MM", "--month MM", "Generate guide for the given month") do |m|
+    month = m.to_i
+    puts month
+  end
+end.parse!
+
 days = Date.new(year, month, -1).day
+
 
 title = "Igeliturgikus Útmutató - #{year}. #{pad(month)}"
 puts "<html><head><title>#{title}</title><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\"></head><body>"
