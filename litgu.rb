@@ -29,6 +29,15 @@ title = "Igeliturgikus Útmutató - #{year}. #{pad(month)}"
 puts "<html><head><title>#{title}</title><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\"></head><body>"
 puts "<h1>#{title}</h1>"
 
+puts "<h2>Tartalom</h2>"
+puts "<ul>"
+(1..days).each do |day|
+  date_desc = "#{year}-#{pad(month)}-#{pad(day)}"
+
+  puts "<li><a href=\"\##{date_desc}\">#{date_desc}</a></li>"
+end
+puts "</ul>"
+
 (1..days).each do |day|
   date_desc = "#{year}-#{pad(month)}-#{pad(day)}"
 
@@ -37,10 +46,11 @@ puts "<h1>#{title}</h1>"
 
   page_title = page_content[1]
   page_title.name = "h1"
-
+  
   rulers = page_content.css("hr")
   rulers.each { |hr| page_content.delete(hr) }
 
+  puts "<a id=\"#{date_desc}\"/>"
   puts page_content.to_html
 end
 
