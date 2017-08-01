@@ -11,6 +11,25 @@ def pad(n)
   n.to_s.rjust(2, "0")
 end
 
+def hun_date(year, month, day)
+  month_names = [
+    "január",
+    "február",
+    "március",
+    "április",
+    "május",
+    "június",
+    "július",
+    "augusztus",
+    "szeptember",
+    "október",
+    "november",
+    "december"
+  ]
+
+  "#{year}. #{month_names[month-1]} #{day}."
+end
+
 today = Date.today
 year = today.year
 month = today.month
@@ -34,7 +53,7 @@ puts "<ul>"
 (1..days).each do |day|
   date_desc = "#{year}-#{pad(month)}-#{pad(day)}"
 
-  puts "<li><a href=\"\##{date_desc}\">#{date_desc}</a></li>"
+  puts "<li><a href=\"\##{date_desc}\">#{hun_date(year, month, day)}</a></li>"
 end
 puts "</ul>"
 
@@ -46,11 +65,12 @@ puts "</ul>"
 
   page_title = page_content[1]
   page_title.name = "h1"
+  page_title["id"] = date_desc
+  page_title.content = hun_date(year, month, day)
   
   rulers = page_content.css("hr")
   rulers.each { |hr| page_content.delete(hr) }
 
-  puts "<a id=\"#{date_desc}\"/>"
   puts page_content.to_html
 end
 
