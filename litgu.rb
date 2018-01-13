@@ -39,6 +39,7 @@ end
 today = Time.now
 year = today.year
 month = today.month
+generate_for_kindle = false
 
 OptionParser.new do |options|
   options.on("-y YYYY", "--year YYYY", "Specify the year for which to generate") do |y|
@@ -47,6 +48,10 @@ OptionParser.new do |options|
 
   options.on("-m MM", "--month MM", "Generate guide for the given month") do |m|
     month = m.to_i
+  end
+
+  options.on("-k", "--kindle", "Generate MOBI format for Amazon Kindle") do
+    generate_for_kindle = true
   end
 end.parse!
 
@@ -101,5 +106,8 @@ Dir.mktmpdir do |work_dir|
   epub_blr.generate_epub epub_file
 end
 
-puts "Starting MOBIL file generator..."
-exec "./kindlegen #{epub_file}"
+
+if generate_for_kindle
+  puts "Starting MOBIL file generator..."
+  exec "./kindlegen #{epub_file}"
+end
