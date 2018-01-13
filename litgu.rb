@@ -8,6 +8,7 @@ require "open-uri"
 require "time"
 require "gepub"
 require "tmpdir"
+require "fileutils"
 
 def pad(n)
   n.to_s.rjust(2, "0")
@@ -59,9 +60,11 @@ days = Date.new(year, month, -1).day
 
 guide_url_tmpl = "http://igenaptar.katolikus.hu/nap/index.php?holnap=%{date_desc}"
 
+cover_file = "bible-cover-portrait-big.gif"
 epub_file = File.join File.dirname(__FILE__), "#{year}-#{pad(month)}.epub"
 
 Dir.mktmpdir do |work_dir|
+  FileUtils.cp cover_file, work_dir
   # Download and prepare each day of the month as a chapter
   (1..days).each do |day|
     date_desc = to_date_desc(year, month, day)
@@ -93,6 +96,8 @@ Dir.mktmpdir do |work_dir|
     date today
 
     resources(:workdir => work_dir) do
+      cover_image cover_file
+
       ordered do
         (1..days).each do |day|
           file "#{to_date_desc(year, month, day)}.html"
