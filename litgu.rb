@@ -9,6 +9,7 @@ require "time"
 require "gepub"
 require "tmpdir"
 require "fileutils"
+require "erb"
 
 def pad(n)
   n.to_s.rjust(2, "0")
@@ -29,8 +30,24 @@ $hun_month_names = [
   "december"
 ]
 
-def to_hun_date(year, month, day)
-  "#{year}. #{$hun_month_names[month-1]} #{day}."
+$hun_day_names = [
+  "hétfő",
+  "kedd",
+  "szerda",
+  "csütörtök",
+  "péntek",
+  "szombat",
+  "vasárnap"
+]
+
+def to_hun_date(year, month, day, *settings)
+  day_name = nil
+  if settings.include? :day_name
+    date = Date.new(year, month, day)
+    day_name = " - " + $hun_day_names[date.cwday-1]
+  end
+
+  "#{year}. #{$hun_month_names[month-1]} #{day}.#{day_name}"
 end
 
 def to_date_desc(year, month, day)
@@ -77,7 +94,7 @@ Dir.mktmpdir do |work_dir|
     page_title = page_content[1]
     page_title.name = "h1"
     page_title["id"] = date_desc
-    page_title.content = to_hun_date(year, month, day)
+    page_title.content = to_hun_date(year, month, day, :day_name)
 
     rulers = page_content.css("hr")
     rulers.each { |hr| page_content.delete(hr) }
@@ -87,10 +104,35 @@ Dir.mktmpdir do |work_dir|
     File.write out_file, page.to_html
   end
 
+
+  # Generate TOC
+  toc_file = File.join(work_dir, "toc.xhtml")
+  puts "Generating #{toc_file} ..."
+  toc_template = %{
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>Tartalom</h1>
+    <ul>
+    <% (1..days).each do |day| %>
+      <li><a href="<%= to_date_desc(year, month, day) %>.html"><%= to_hun_date(year, month, day, :day_name) %></a></li>
+    <% end %>
+    </ul>
+  </body>
+</html>
+}
+  toc = ERB.new(toc_template)
+  File.write toc_file, toc.result
+
+
   # Generate EPUB file from chapters
   epub_blr = GEPUB::Builder.new do
     language "hu"
-    title "Igeliturgikus Útmutató - #{year}. #{$hun_month_names[month]}"
+    title "Igeliturgikus Útmutató - #{year}. #{$hun_month_names[month-1]}"
     creator "Szabadkai Márk"
     unique_identifier guide_url_tmpl % {:date_desc => to_date_desc(year, month, 1)}, "url"
     date today
@@ -99,6 +141,9 @@ Dir.mktmpdir do |work_dir|
       cover_image cover_file
 
       ordered do
+        file "toc.xhtml"
+        heading "Tartalom"
+
         (1..days).each do |day|
           file "#{to_date_desc(year, month, day)}.html"
           heading to_hun_date(year, month, day)
@@ -113,6 +158,6 @@ end
 
 
 if generate_for_kindle
-  puts "Starting MOBIL file generator..."
+  puts "Starting MOBI file generator..."
   exec "./kindlegen #{epub_file}"
 end
