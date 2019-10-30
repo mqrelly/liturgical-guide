@@ -77,7 +77,7 @@ days = Date.new(year, month, -1).day
 
 guide_url_tmpl = "http://igenaptar.katolikus.hu/nap/index.php?holnap=%{date_desc}"
 
-cover_file = "bible-cover-portrait-big.gif"
+cover_file = "bible-cover-portrait-big.png"
 epub_file = File.join File.dirname(__FILE__), "#{year}-#{pad(month)}.epub"
 
 Dir.mktmpdir do |work_dir|
